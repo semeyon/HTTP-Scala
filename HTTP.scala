@@ -62,9 +62,9 @@ class HTTPConnection(url: String) {
         fromInputStream(connection.getInputStream)
     }
 
-    private def encodePostParameters(data: Map[String, String]) = 
+    private def encodePostParameters(data: Map[String, String], coding: String = "UTF-8") = 
          for ((name,value) <- data) 
-            yield URLEncoder.encode(name) + "=" + URLEncoder.encode(value)
+            yield URLEncoder.encode(name, coding) + "=" + URLEncoder.encode(value, coding)
 
     def get = {
         loadCookies
