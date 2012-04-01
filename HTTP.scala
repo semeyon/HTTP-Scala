@@ -3,15 +3,16 @@
   A simple HTTP client in Scala, suporting GET and POST 
   
   Jared Roesch, 2011 
+  Semeyon Svetliy, 2012
 */
   
 package com.jroesch  
 
 object HTTP {
-  def apply(url: String): HTTPConnection = HTTPConnection(url)
-  def get(url: String) = HTTPConnection(url).get
-  def post(url: String, parameters: Map[String, String]) =
-    HTTPConnection(url).post(parameters)
+    def apply(url: String): HTTPConnection = HTTPConnection(url)
+    def get(url: String) = HTTPConnection(url).get
+    def post(url: String, parameters: Map[String, String]) =
+        HTTPConnection(url).post(parameters)
 }
 
 // allows factory like behavior with HTTPConnection
@@ -23,15 +24,15 @@ object HTTPConnection {
 class HTTPConnection(url: String) {
     
     import collection.JavaConversions._
-  import java.net._
+    import java.net._
     import java.io._
     import io.Source.fromInputStream
     //constructor action 
     private var connection = (new URL(url)).openConnection()
 
-  var cookies = Map[String, String]()
+    var cookies = Map[String, String]()
   
-  def storeCookies = {
+    def storeCookies = {
         connection.getHeaderFields.lift("Set-Cookie") match {
             case Some(cookieList) => cookieList foreach { 
                 c => val (name,value) = c span { _ != '='} 
@@ -39,40 +40,33 @@ class HTTPConnection(url: String) {
             }
             case None => 
         }
-  }
+    }
   
-  def loadCookies() =
+    def loadCookies() =
       for ((name, value) <- cookies) connection.setRequestProperty("Cookie", name + "=" + value)
-  //URLEncoder.encode is deprecated fix needed
-  def post(parameters: Map[String, String]) = {
-        //try {
-            //connection.setRequestProperty("User-Agent")
-            //connection.setConnectTimeout()
+      
+    //URLEncoder.encode is deprecated fix needed
+    def post(parameters: Map[String, String]) = {
 
-            loadCookies
+        loadCookies
 
-            connection.setDoOutput(true)
-            connection.connect
+        connection.setDoOutput(true)
+        connection.connect
 
-            val postStream = new OutputStreamWriter(connection.getOutputStream())
-            postStream.write(encodePostParameters(parameters).mkString("&"))
-            postStream.flush
-            postStream.close
+        val postStream = new OutputStreamWriter(connection.getOutputStream())
+        postStream.write(encodePostParameters(parameters).mkString("&"))
+        postStream.flush
+        postStream.close
 
-            storeCookies
-            fromInputStream(connection.getInputStream)
-        //} catch {
-            //case e: UnknownHostException => println(e.message + ":Could not connect to host.")
-        //}
-  }
+        storeCookies
+        fromInputStream(connection.getInputStream)
+    }
 
-  private def encodePostParameters(data: Map[String, String]) = 
+    private def encodePostParameters(data: Map[String, String]) = 
          for ((name,value) <- data) 
             yield URLEncoder.encode(name) + "=" + URLEncoder.encode(value)
 
-  def get = {
-        //connection.setRequestProperty()
-        //connection.setConnectTimeout()
+    def get = {
         loadCookies
         connection.connect
         storeCookies
